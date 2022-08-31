@@ -1,10 +1,22 @@
 class Controls{
-    constructor(){
+    constructor(controlType){
         this.forword=false;
         this.reverse=false;
         this.left=false;
         this.right=false;
-        this.#addKeyboardListeners();
+        switch(controlType){
+            case "KEYS":
+                this.#addKeyboardListeners();
+                break;
+            case "DUMMY":
+                this.forword = true;
+                break;
+            
+        }
+        if(controlType=="KEYS"){
+            
+        }
+        
     }
     #addKeyboardListeners(){
         document.onkeydown=(event)=>{
