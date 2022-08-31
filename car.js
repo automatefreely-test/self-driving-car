@@ -12,28 +12,71 @@ class Car{
         this.maxSpeed=3;
         this.friction=0.05;
 
+        this.damaged= false;
+
         this.sensor=new Sensor(this);
 
         this.angle=0;
     }
     draw(ctx){
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(-this.angle);
+        if(this.damaged){
+            ctx.fillStyle="gray";
+        }else{
+            ctx.fillStyle="black";
+        }
+
         ctx.beginPath();
-        ctx.rect(
-            -this.width/2,
-            -this.height/2,
-            this.width,
-            this.height
-        );
+        
+        ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
+        for(let i=1;i<this.polygon.length;i++){
+            ctx.lineTo(this.polygon[i].x,this.polygon[i].y);
+        }
+        
         ctx.fill();
-        ctx.restore();
+
         this.sensor.draw(ctx);
     }
     update(roadBoarders){
-        this.#move();
+        if(!this.damaged){
+            this.#move();
+            this.polygon=this.#createPolygon();
+            this.damaged = this.#acessDamage(roadBoarders);
+        }
+            
         this.sensor.update(roadBoarders);
+    }
+
+    #acessDamage(roadBoarders){
+        for(let i=0;i<roadBoarders.length;i++){
+            if(polyIntersect(this.polygon,roadBoarders[i])){
+                return true;
+            } 
+        }
+        return false;
+    }
+
+    #createPolygon(){
+        const points = [];
+        const alpha = Math.atan2(this.width,this.height);
+        const rad = Math.hypot(this.width, this.height)/2;
+
+        points.push({
+            x:this.x-rad*Math.sin(-alpha+this.angle),
+            y:this.y-rad*Math.cos(-alpha+this.angle)
+        });
+        points.push({
+            x:this.x-rad*Math.sin(alpha+this.angle),
+            y:this.y-rad*Math.cos(alpha+this.angle)
+        });
+        points.push({
+            x:this.x-rad*Math.sin(Math.PI-alpha+this.angle),
+            y:this.y-rad*Math.cos(Math.PI-alpha+this.angle)
+        });
+        points.push({
+            x:this.x-rad*Math.sin(Math.PI+alpha+this.angle),
+            y:this.y-rad*Math.cos(Math.PI+alpha+this.angle)
+        });
+        return points;
     }
     #move(){
         if(this.controls.forword){
